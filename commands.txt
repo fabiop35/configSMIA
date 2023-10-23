@@ -1,0 +1,33 @@
+
+
+#start apache
+apachectl
+#stop apache
+aoachectl -k stop
+
+#Copy files to the Apache server
+cp configServer-SMIA-CH05-0.0.1-SNAPSHOT.jar /data/data/com.termux/files/usr/share/apache2/default-site/htdocs
+
+#Termux $HOME
+/data/data/com.termux/files/home
+
+#run Spring Configuration Server
+java -jar configServer-SMIA-CH05-0.0.1-SNAPSHOT.jar -Duser.timezone=GMT-5:00 -Xms64m -Xmx64m -XX:+UseSerialGC -Xss512k -XX:MaxRAM=72m -XX:MaxMetaspaceSize=74M -XX:MetaspaceSize=74M
+
+#Start Keycloak server
+bin/kc.sh start-dev
+
+# Start the ZooKeeper service
+bin/zookeeper-server-start.sh config/zookeeper.properties
+
+#Start Kafka
+bin/kafka-server-start.sh config/server.properties
+
+#Start Postgres
+#start                                              
+pg_ctl -D ~/postgres_data -l ~/logfile start
+
+#copy to Userland
+scp -P 2022 -rpO README.md termux@localhost:/home
+
+
