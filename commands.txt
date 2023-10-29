@@ -30,4 +30,18 @@ pg_ctl -D ~/postgres_data -l ~/logfile start
 #copy to Userland
 scp -P 2022 -rpO README.md termux@localhost:/home
 
+#mvn command to create a new image
+mvn clean package dockerfile:build 
+docker-compose -f docker/docker-compose.yml up
+
+#start logstash
+bin/logstash -f config/logstash.conf
+
+#ZIPKIN Dowload and run
+curl -sSL https://zipkin.io/quickstart.sh | bash -s
+java -jar zipkin.jar
+
+#Zipkin console
+http://localhost:9411/zipkin/
+
 
