@@ -44,4 +44,22 @@ java -jar zipkin.jar
 #Zipkin console
 http://localhost:9411/zipkin/
 
+##Start Alpine Docker
+qemu-system-x86_64 -machine q35 -m 3072 -smp cpus=2 -cpu qemu64 \
+  -drive if=pflash,format=raw,read-only,file=$PREFIX/share/qemu/edk2-x86_64-code.fd \
+  -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::5432-:5432 -device virtio-net,netdev=n1 \
+  -nographic alpine/alpine.img
+
+#Create PostgreSQL Container
+docker run -d --name polar-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=polardb_catalog -p 5432:5432 postgres:14.4
+
+#stop container
+docker stop polar-postgres
+
+#Get a shell from a running container
+docker exec -it polar-postgres bash
+
+#Start an interactive PSQL console
+docker exec -it polar-postgres psql -U user -d polardb_catalog
+
 
