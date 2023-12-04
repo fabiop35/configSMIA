@@ -44,14 +44,28 @@ java -jar zipkin.jar
 #Zipkin console
 http://localhost:9411/zipkin/
 
+### GRADLE ###
+#Build the JAR artifact
+gradle clean bootJar
+
+##############
+### DOCKER ###
+##############
+
 ##Start Alpine Docker
 qemu-system-x86_64 -machine q35 -m 3072 -smp cpus=2 -cpu qemu64 \
   -drive if=pflash,format=raw,read-only,file=$PREFIX/share/qemu/edk2-x86_64-code.fd \
   -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::5432-:5432 -device virtio-net,netdev=n1 \
   -nographic alpine/alpine.img
 
+#Create a network
+docker network create catalog-network
+
 #Create PostgreSQL Container
 docker run -d --name polar-postgres -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=polardb_catalog -p 5432:5432 postgres:14.4
+
+#Create Postgres Cont. Join to a specific Network
+docker run -d --name polar-postgres --net catalog-network -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=polardb_catalog -p 5432:5432 postgres:14.4
 
 #stop container
 docker stop polar-postgres
@@ -62,4 +76,21 @@ docker exec -it polar-postgres bash
 #Start an interactive PSQL console
 docker exec -it polar-postgres psql -U user -d polardb_catalog
 
+#Build a image from a Docker file
+docker build -t my-java-image:1.0.0 . #Ok Alpine
 
+#Assign a fully qualified name before publishing
+docker tag my-java-image:1.0.0 ghcr.io/fabiop35/my-java-image:1.0.0
+
+#Push to GitHub -> packages
+docker push ghcr.io/fabiop35/my-java-image:1.0.0
+
+
+#Build a container image (into folder catalog-svrce)
+docker build -t catalog-service .
+
+#Run the catalog-service container
+docker run -d --name catalog-service --net catalog-network -p 9001:9001 -e SPRING_DATASOURCE_URL=jdbc:postgresql://polar-postgres:5432/polardb_catalog -e SPRING_PROFILES_ACTIVE=testdata -e SPRING_CLOUD_CONFIG_URI=http://config-service:8888 catalog-service
+
+#Run CONFIG-SERVICE container
+docker run -d --name config-service --net catalog-network -p 8888:8888 config-service
