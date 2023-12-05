@@ -94,3 +94,9 @@ docker run -d --name catalog-service --net catalog-network -p 9001:9001 -e SPRIN
 
 #Run CONFIG-SERVICE container
 docker run -d --name config-service --net catalog-network -p 8888:8888 config-service
+
+#Builpack build image
+gradle bootBuildImage
+
+
+
