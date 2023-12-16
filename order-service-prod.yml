@@ -1,0 +1,9 @@
+server:
+  port: 9003
+  shutdown: graceful
+  netty:
+    connection-timeout: 2s
+    idle-timeout: 15s
+
+polar:
+  greeting: "Welcome to the Order Service from the config server"

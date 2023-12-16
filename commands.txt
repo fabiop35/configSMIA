@@ -99,4 +99,9 @@ docker run -d --name config-service --net catalog-network -p 8888:8888 config-se
 gradle bootBuildImage
 
 
+#Create Postgres DB
+createdb polardb_order
+
+
+
 
